@@ -13,9 +13,21 @@ import dataJSON from '../src/data.json';
 import _ from 'lodash';
 
 
-function getIntersections(idCliente) {
-  
-  let color;
+
+
+let multipleIntersections = []
+
+function getSizeByQuantity(grano){
+  let quantity = 0
+  dataJSON.forEach(d => {
+    if(d.Grano === grano){
+      quantity ++;
+    }
+  })
+  return 1.3 + (quantity / 1000) 
+}
+
+function getColorIntersections(idCliente) { 
 
   //Inicializo todas las posiciones en 0  para ver con cual intersecta el nodo
   let intersectionTable = [];
@@ -32,42 +44,37 @@ function getIntersections(idCliente) {
     if (idCliente == d.ID_Cliente) {
 
       if (d.Grano == 'SOJA') {
-        intersectionTable[0] = 1
+        intersectionTable[0] = 2
       }
       if (d.Grano == 'SORGO') {
-        intersectionTable[1] = 1
+        intersectionTable[1] = 4
       }
       if (d.Grano == 'TRIGO') {
-        intersectionTable[2] = 1
+        intersectionTable[2] = 8
       }
       if (d.Grano == 'MAIZ') {
-        intersectionTable[3] = 1
+        intersectionTable[3] = 16
       }
       if (d.Grano == 'GIRASOL') {
-        intersectionTable[4] = 1
+        intersectionTable[4] = 32
       }
     }
   });
 
-  if (
-    intersectionTable[0] == 1 &&
-    intersectionTable[1] == 0 &&
-    intersectionTable[2] == 1 &&
-    intersectionTable[3] == 1 &&
-    intersectionTable[4] == 0) {
-    color = 'business'
-  } else {
-    color = 'disk'
+  let interesectionValue = intersectionTable[0] + intersectionTable[1] + intersectionTable[2] + intersectionTable[3] + intersectionTable[4]
+
+  if(multipleIntersections[interesectionValue] == undefined){
+    multipleIntersections[interesectionValue] = '#' + Math.floor(Math.random() * 16777215).toString(16)
   }
 
-  return color
+  return  multipleIntersections[interesectionValue]
+
 }
 
 function data() {
-  const styles = createStyles().node;
   const nodeColorsDone = mapValues(rawData(), (value) => {
-    if (value.type && styles[value.type]) {
-      return { ...value, ...styles[value.type] };
+    if (value.type ) {
+      return { ...value};
     }
     return value;
   });
@@ -87,124 +94,64 @@ function data() {
 }
 
 function rawData() {
+
   //PRIMERO SE DEFINEN TODOS LOS NODOS PRINCIPALES
   let rData = {
     1: {
       label: {
         text: 'SOJA', color: "#000000", backgroundColor: "#ffffff"
       },
-      donut: {
-        segments: [
-          {
-            color: createStyles().node.disk.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.disk.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.disk.color,
-            size: 1,
-          },
-        ],
+      border: {
+        "color": "black",
+        "width": 2
       },
-
-
-      type: 'disk'
+      color: 'grey',
+      size: getSizeByQuantity('SOJA')
 
     },
     2: {
       label: {
         text: 'MAIZ', color: "#000000", backgroundColor: "#ffffff"
       },
-      donut: {
-        segments: [
-          {
-            color: createStyles().node.business.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.business.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.business.color,
-            size: 1,
-          },
-        ],
+      border: {
+        "color": "black",
+        "width": 2
       },
-      type: 'business'
+      color: 'grey', 
+      size: getSizeByQuantity('MAIZ')
     },
     3: {
       label: {
         text: 'GIRASOL', color: "#000000", backgroundColor: "#ffffff"
       },
-      donut: {
-        segments: [
-          {
-            color: createStyles().node.switch.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.switch.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.switch.color,
-            size: 1,
-          },
-        ],
+      border: {
+        "color": "black",
+        "width": 2
       },
-      type: 'switch'
+      color: 'grey',
+      size: getSizeByQuantity('GIRASOL')
     },
     4: {
       label: {
         text: 'SORGO', color: "#000000", backgroundColor: "#ffffff"
       },
-      type: 'san',
-      donut: {
-        segments: [
-          {
-            size: 1,
-            color: createStyles().node.san.color
-          },
-          {
-            size: 1,
-            color: createStyles().node.san.color
-          },
-          {
-            size: 1,
-            color: createStyles().node.san.color
-          },
-        ],
+      border: {
+        "color": "black",
+        "width": 2
       },
-
+      color: 'grey',
+      size: getSizeByQuantity('SORGO')
     },
     5: {
       label: {
         text: 'TRIGO', color: "#000000", backgroundColor: "#ffffff"
       },
-      donut: {
-        border: {
-          width: 2,
-        },
-        segments: [
-          {
-            color: createStyles().node.server.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.server.color,
-            size: 1,
-          },
-          {
-            color: createStyles().node.server.color,
-            size: 1,
-          },
-        ],
+      border: {
+        "color": "black",
+        "width": 2
       },
-      type: 'server'
+      color: 'grey',
+      size: getSizeByQuantity('TRIGO')
     },
   }
 
@@ -213,57 +160,8 @@ function rawData() {
 
   dataJSON.map((data) => {
 
-    // let width = 1;
-    // console.log("--Precio--", data.Precio);
-    // if (data.Precio <= 3000) {
-    //   console.log("--3000--");
-    //   width = 1;
-    // } else {
-    //   if (data.Precio <= 6000) {
-    //     console.log("--6000--");
-    //     width = 2;
-    //   } else {
-    //     if (data.Precio <= 9000) {
-    //       console.log("--9000--");
-    //       width = 3;
-    //     } else {
-    //       if (data.Precio <= 12000) {
-    //         console.log("--12000--");
-    //         width = 4;
-    //       } else {
-    //         if (data.Precio <= 15000) {
-    //           console.log("--15000--");
-    //           width = 5;
-    //         } else {
-    //           if (data.Precio <= 18000) {
-    //             console.log("--18000--");
-    //             width = 6;
-    //           } else {
-    //             if (data.Precio <= 21000) {
-    //               console.log("--21000--");
-    //               width = 7;
-    //             } else {
-    //               if (data.Precio <= 24000) {
-    //                 console.log("--24000--");
-    //                 width = 8;
-    //               } else {
-    //                 if (data.Precio <= 27000) {
-    //                   console.log("--27000--");
-    //                   width = 9;
-    //                 } else {
-    //                   console.log("--30000--")
-    //                   width = 10;
-    //                 }
-    //               }
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-
-    let colorClientNode = getIntersections(data.ID_Cliente);
+    let colorClientNode = getColorIntersections(data.ID_Cliente);
+   console.log(getSizeByQuantity(data.Grano))
 
 
     switch (data.Grano) {
@@ -274,7 +172,7 @@ function rawData() {
           label: {
             text: `Cliente\n${data.ID_Cliente}`
           },
-          type: colorClientNode
+          color: colorClientNode
         }
 
         //linea de union
@@ -282,8 +180,7 @@ function rawData() {
           id1: data.ID_Cliente,
           id2: '1',
           end1: { arrow: false },
-          end2: { arrow: false },
-          color: "#77FF33",
+          end2: { arrow: false }
         }
 
         break;
@@ -292,7 +189,7 @@ function rawData() {
           label: {
             text: `Cliente\n${data.ID_Cliente}`
           },
-          type: colorClientNode
+          color: colorClientNode
         }
 
 
@@ -300,8 +197,7 @@ function rawData() {
           id1: data.ID_Cliente,
           id2: '2',
           end1: { arrow: false },
-          end2: { arrow: false },
-          color: "#F6FF33",
+          end2: { arrow: false }
         }
 
         break;
@@ -311,15 +207,14 @@ function rawData() {
           label: {
             text: `Cliente\n${data.ID_Cliente}`,
           },
-          type: colorClientNode
+          color: colorClientNode
         }
 
         rData[`${data.ID_Cliente}-3`] = {
           id1: data.ID_Cliente,
           id2: '3',
           end1: { arrow: false },
-          end2: { arrow: false },
-          color: "#FF3333",
+          end2: { arrow: false }
         }
         break;
 
@@ -329,15 +224,14 @@ function rawData() {
           label: {
             text: `Cliente\n${data.ID_Cliente}`
           },
-          type: colorClientNode
+          color: colorClientNode
         }
 
         rData[`${data.ID_Cliente}-4`] = {
           id1: data.ID_Cliente,
           id2: '4',
           end1: { arrow: false },
-          end2: { arrow: false },
-          color: "#335BFF",
+          end2: { arrow: false }
         }
         break;
       case "TRIGO":
@@ -345,55 +239,23 @@ function rawData() {
           label: {
             text: `Cliente\n${data.ID_Cliente}`
           },
-          type: colorClientNode
+          color: colorClientNode
         }
 
         rData[`${data.ID_Cliente}-5`] = {
           id1: data.ID_Cliente,
           id2: '5',
           end1: { arrow: false },
-          end2: { arrow: false },
-          color: "#F633FF"
+          end2: { arrow: false }
         }
         break;
     }
   });
 
-
   console.log("--rData-->", rData);
 
   return rData;
 }
-
-
-function createStyles() {
-  return {
-    node: {
-      business: {
-        color: "#FFB433",
-      },
-      service: {
-        color: "#FF33F5",
-      },
-      virtual: {
-        color: "#048170",
-      },
-      server: {
-        color: "#FF33F5",
-      },
-      switch: {
-        color: "#5AFF33",
-      },
-      san: {
-        color: "#338DFF",
-      },
-      disk: {
-        color: "#00423e",
-      },
-    },
-  };
-}
-
 
 export default data;
 
@@ -438,38 +300,6 @@ function Filtering(props) {
       savedPositions.current = { ...newPositions };
     }
 
-    if (newSelection) {
-      if (!isEmpty(newSelection)) {
-        const id = Object.keys(newSelection)[0];
-        if (isNode(allItems[id])) {
-          const subGraph = await findSubGraph(id);
-          setState(() => {
-            return {
-              items: subGraph, // replace items with just the subGraph
-              layout: {
-                name: 'sequential',
-                top: id,
-                orientation: 'right',
-                curvedLinks: true,
-                stretch: 3,
-                tightness: 9,
-              },
-              positions: {}, // force the new layout to run
-              selection: newSelection,
-            };
-          });
-        }
-      } else {
-        setState(() => {
-          return {
-            items: allItems,
-            layout: { curvedLinks: false },
-            positions: savedPositions.current,
-            selection: newSelection,
-          };
-        });
-      }
-    }
   };
 
 
@@ -480,7 +310,10 @@ function Filtering(props) {
         items={state.items}
         positions={state.positions}
         selection={state.selection}
-        layout={state.layout}
+        layout={{
+          name: 'organic',
+          fixed:['center']
+        }}
         // disable dragging of nodes
         onDragStart={({ preventDefault, type, id }) => {
           if (id && isNode(state.items[id])) {
@@ -493,3 +326,4 @@ function Filtering(props) {
     </div>
   );
 }
+
