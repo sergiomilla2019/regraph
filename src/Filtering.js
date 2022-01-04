@@ -1,19 +1,13 @@
 import React, { useState, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import pickBy from 'lodash/pickBy';
 import has from 'lodash/has';
-import { neighbors } from 'regraph/analysis';
 
 import { Chart } from 'regraph';
-import { distances } from 'regraph/analysis';
 
 import mapValues from 'lodash/mapValues';
 
 import dataJSON from '../src/data.json';
 import _ from 'lodash';
-
-
-
 
 let multipleIntersections = []
 
@@ -29,7 +23,7 @@ function getSizeByQuantity(grano){
 
 function getColorIntersections(idCliente) { 
 
-  //Inicializo todas las posiciones en 0  para ver con cual intersecta el nodo
+  //Inicializo todas las posiciones en 0 para ver con cual intersecta el nodo
   let intersectionTable = [];
   intersectionTable.push(0);
   intersectionTable.push(0);
@@ -40,7 +34,7 @@ function getColorIntersections(idCliente) {
   //Recorro la lista de clientes para ver que clientes se relacionan con que producto
   dataJSON.forEach(d => {
 
-    //Por cada cliente prendo un nuevo producto
+    //Por cada cliente prendo un nuevo producto con el valor binario (2^index)
     if (idCliente == d.ID_Cliente) {
 
       if (d.Grano == 'SOJA') {
@@ -95,7 +89,7 @@ function data() {
 
 function rawData() {
 
-  //PRIMERO SE DEFINEN TODOS LOS NODOS PRINCIPALES
+  //Se define un vector de nodos "principales"
   let rData = {
     1: {
       label: {
@@ -167,7 +161,7 @@ function rawData() {
     switch (data.Grano) {
       case "SOJA":
 
-        //nodo de cliente
+        //Nodo de cliente
         rData[data.ID_Cliente] = {
           label: {
             text: `Cliente\n${data.ID_Cliente}`
@@ -175,7 +169,7 @@ function rawData() {
           color: colorClientNode
         }
 
-        //linea de union
+        //Linea de union de nodo cliente con nodo principal
         rData[`${data.ID_Cliente}-1`] = {
           id1: data.ID_Cliente,
           id2: '1',
@@ -277,29 +271,12 @@ function Filtering(props) {
   });
   const savedPositions = useRef({});
 
-  const findSubGraph = async (nodeId) => {
-    const subGraphIds = await distances(allItems, nodeId, { direction: 'to' });
-
-    return pickBy(allItems, (item, id) => {
-      // Get the nodes present in the subgraph.
-      if (has(subGraphIds, id)) {
-        return true;
-      }
-      // Get links which have the nodes at both ends in the subgraph.
-      if (!isNode(item)) {
-        return has(subGraphIds, item.id1) && has(subGraphIds, item.id2);
-      }
-      return false;
-    });
-  };
-
   const chartChangeHandler = async ({ positions: newPositions, selection: newSelection }) => {
     // After running the initial layout, store all the
     // positions so they can be restored later.
     if (!isEmpty(newPositions) && isEmpty(savedPositions.current)) {
       savedPositions.current = { ...newPositions };
     }
-
   };
 
 
