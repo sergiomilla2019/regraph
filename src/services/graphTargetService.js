@@ -1,3 +1,4 @@
+
 const getGraphData = () => {
     return mockResponse;
 }
@@ -6,10 +7,6 @@ let mockResponse = {
     "success": true,
     "data": {
         "productsGroup": [
-            {
-                "id": 695,
-                "group_sku": "rubro-Grano"
-            },
             {
                 "id": 696,
                 "group_sku": "MAIZ"

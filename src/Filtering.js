@@ -18,10 +18,10 @@ function getSizeByQuantity(grain) {
       quantity++;
     }
   })
-  return 1.3 + (quantity / 1000)
+  return 2 + (quantity / 1000)
 }
 
-function getColorIntersections(idCliente) {
+function getColorIntersections(target) {
   //Initialize all positions to 0 to see which node intersects with
   let intersectionTable = [];
   response.productsGroup.forEach(p => {
@@ -34,7 +34,7 @@ function getColorIntersections(idCliente) {
   response.transactions.forEach(d => {
 
     //For each customer I initialize a new product with the binary value (2 ^ index)
-    if (idCliente == d.target_id) {
+    if (target == d.target_id) {
       for (let i = 0; i < response.productsGroup.length; i++) {
         if (d.name == response.productsGroup[i].group_sku) {
           intersectionTable[i] = Math.pow(2, (i + 1))
@@ -43,11 +43,30 @@ function getColorIntersections(idCliente) {
       interesectionValue = intersectionTable.reduce((a, b) => a + b, 0)
     }
   });
-  if (multipleIntersections[interesectionValue] == undefined) {
-    multipleIntersections[interesectionValue] = '#' + Math.floor(Math.random() * 16777215).toString(16)
-  }
 
+  if (multipleIntersections[interesectionValue] == undefined) {
+    multipleIntersections[interesectionValue] = rainbow((interesectionValue), Math.pow(2, intersectionTable.length)-1)
+  }
   return multipleIntersections[interesectionValue]
+}
+
+ function rainbow(step, numOfSteps) {
+  // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+  var r, g, b;
+  var h = step / numOfSteps;
+  var i = ~~(h * 6);
+  var f = h * 6 - i;
+  var q = 1 - f;
+  switch(i % 6){
+      case 0: r = 1; g = f; b = 0; break;
+      case 1: r = q; g = 1; b = 0; break;
+      case 2: r = 0; g = 1; b = f; break;
+      case 3: r = 0; g = q; b = 1; break;
+      case 4: r = f; g = 0; b = 1; break;
+      case 5: r = 1; g = 0; b = q; break;
+  }
+  var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+  return (c);
 }
 
 function data() {
@@ -63,12 +82,12 @@ function data() {
 
 function rawData() {
 
+  //Product mapping
   let rData = {}
   for (let i = 0; i < response.productsGroup.length; i++) {
-
     rData[i] = {
         label: {
-          text: response.productsGroup[i].group_sku, color: "#000000", backgroundColor: "#ffffff"
+          text: response.productsGroup[i].group_sku, color: "#000000", backgroundColor: "grey"
         },
         border: {
           "color": "black",
@@ -79,15 +98,15 @@ function rawData() {
       }
   }
 
+  //Target mapping
   response.transactions.map((data) => {
-
     let colorClientNode = getColorIntersections(data.target_id);
 
     for (let i = 0; i < response.productsGroup.length; i++) {
       if (response.productsGroup[i].group_sku == data.name) {
         rData[data.target_id] = {
           label: {
-            text: `Cliente\n${data.target_id}`
+            text: `Target\n${data.target_id}`, backgroundColor: colorClientNode
           },
           color: colorClientNode
         }
@@ -96,12 +115,13 @@ function rawData() {
           id1: data.target_id,
           id2: i,
           end1: { arrow: false },
-          end2: { arrow: false }
+          end2: { arrow: false },
+          color: colorClientNode
         }
       }
     }
   });
-
+  
   return rData;
 }
 
