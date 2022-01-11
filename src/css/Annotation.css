@@ -1,0 +1,45 @@
+.annotation {
+    display: 'block';
+    position: absolute;
+    border: #252c32 2px solid;
+    background: white;
+    width: 200px;
+    font-size: 12px;
+    border-radius: 2px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.annotation-header {
+    font-weight: bolder;
+    border-bottom: #252c32 2px solid;
+    background-color: #8cedd0;
+    background-color: #8cedd0;
+    padding: 6px 12px;
+    color: #252c32;
+    font-size: 16px;
+}
+
+.annotation-arrow {
+    position: absolute;
+    top: 51px;
+    left: -16px;
+    -webkit-transform: rotate(
+-45deg);
+    transform: rotate(
+-45deg);
+    border: solid 15px transparent;
+    border-top: #252c32 15px solid;
+    border-left: #252c32 15px solid;
+}
+
+.annotation-column {
+    text-decoration: underline;
+    width: 100px;
+    max-width: 100px;
+    vertical-align: top;
+}
+
