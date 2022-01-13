@@ -5,7 +5,8 @@ import has from 'lodash/has';
 import mapValues from 'lodash/mapValues';
 import _ from 'lodash';
 import { getGraphData } from '../services/graphTargetService'
-import { getSizeByQuantity, getColorIntersections } from '../helpers/graphTargetHelper';
+import { getSizeByQuantity, getColorIntersections, hasNodeIntersection } from '../helpers/graphTargetHelper';
+import { neighbors } from 'regraph/analysis';
 
 export const GraphTarget = () => <Filtering items={data()} />;
 
@@ -46,15 +47,17 @@ function rawData() {
 
   //Target mapping
   response.transactions.map((data) => {
-    let colorClientNode = getColorIntersections(data.target_id, response, multipleIntersections);
+
+    
+    let color = getColorIntersections(data.target_id, response, multipleIntersections);
 
     for (let i = 0; i < response.productsGroup.length; i++) {
       if (response.productsGroup[i].group_sku == data.name) {
         rData[data.target_id] = {
           label: {
-            text: `Target\n${data.target_id}`, backgroundColor: colorClientNode
+            text: `Target\n${data.target_id}`, backgroundColor: color
           },
-          color: colorClientNode
+          color: color
         }
 
         rData[`${data.target_id}-${i}`] = {
@@ -62,7 +65,7 @@ function rawData() {
           id2: i,
           end1: { arrow: true },
           end2: { arrow: false },
-          color: colorClientNode,
+          color: color,
           width: 2,
         }
       }
@@ -91,6 +94,7 @@ function Filtering(props) {
   const { items } = props;
   // items to be shown by ReGraph
   const [state, setState] = useState({
+    foreground: {}, layout: { tightness: 3 },
     positions: {},
     selection: {},
     zoom: 1,
@@ -99,6 +103,38 @@ function Filtering(props) {
     isDragging: false,
   });
   const chartRef = useRef();
+
+
+
+
+
+
+  //Communities ----->
+  const styledItems = (selectedItemId) => {
+    let values;
+
+    if (selectedItemId === undefined) {
+      return items;
+    }
+   
+
+    if (items[selectedItemId].color !== 'grey') {
+    values = mapValues(items, (item, id) =>
+    ({
+        ...item,
+        fade: !hasNodeIntersection(selectedItemId, id, items) && items[selectedItemId].color !== item.color
+      }));
+    }else {
+      // getNeighbours().then(function(foreground){
+        values = mapValues(items, (item, id) =>
+        ({
+            ...item,
+            fade: false
+          }));
+      // })
+    }
+    return values
+  };
 
   // remove the annotation if the window changes size
   useEffect(() => {
@@ -121,7 +157,7 @@ function Filtering(props) {
   }, []);
 
   const onChangeHandler = ({ positions: newPositions, selection: newSelection }) => {
-    if (newPositions == null && newSelection == null) {
+    if ((newPositions == null && newSelection == null)) {
       return;
     }
 
@@ -220,6 +256,7 @@ function Filtering(props) {
     if (id == null || !isNode(item) || chart == null) {
       return;
     }
+
     setState((current) => {
       const position = chart.viewCoordinates(current.positions[id].x, current.positions[id].y);
       const offset = {
@@ -272,12 +309,6 @@ function Filtering(props) {
 
   const selectedItemId = firstKey(state.selection);
 
-  if (selectedItemId != null && state.annotationPosition != null) {
-    console.log("Deberia mostrar tabla")
-    console.log(items[selectedItemId])
-  } else {
-    console.log("No deberia mostrar tabla")
-  }
 
   return (
     <div
@@ -286,7 +317,7 @@ function Filtering(props) {
     >
       <Chart
         ref={chartRef}
-        items={items}
+        items={styledItems(selectedItemId)}
         selection={state.selection}
         animation={{ animate: false }}
         onChange={onChangeHandler}
@@ -295,9 +326,10 @@ function Filtering(props) {
         onPointerDown={onPointerDownHandler}
         onViewChange={onViewChangeHandler}
         onWheel={onWheelHandler}
+        layout={state.layout}
         options={{ fit: "all" }}
       />
-      {selectedItemId != null && state.annotationPosition != null && (
+      {selectedItemId != null && state.annotationPosition != null && items[selectedItemId].color === 'grey' && (
         <Annotation
           position={state.annotationPosition}
           info={items[selectedItemId].table}
@@ -320,7 +352,6 @@ function Annotation({ position, info, zoom, size = 1 }) {
       <div className="annotation-header">{info.name}</div>
       <AnnotationRow title="• Total amount:" content={info.amount} />
       <AnnotationRow title="• Total units:" content={info.units} />
-
     </div>
   );
 }
