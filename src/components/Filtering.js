@@ -5,7 +5,7 @@ import has from 'lodash/has';
 import mapValues from 'lodash/mapValues';
 import _ from 'lodash';
 import { getGraphData } from '../services/graphTargetService'
-import { getSizeByQuantity, getColorIntersections, hasNodeIntersection } from '../helpers/graphTargetHelper';
+import { getSizeByQuantity, getColorIntersections, hasNodeIntersection, getQuantity } from '../helpers/graphTargetHelper';
 import { neighbors } from 'regraph/analysis';
 
 export const GraphTarget = () => <Filtering items={data()} />;
@@ -27,10 +27,20 @@ function rawData() {
   //Product mapping
   let rData = {}
   for (let i = 0; i < response.productsGroup.length; i++) {
-    rData[i] = {
+    rData['main-' + i] = {
       label: {
         text: response.productsGroup[i].group_sku, color: "#000000", backgroundColor: "grey"
       },
+      "glyphs": [
+        {
+          "position": "se",
+          "size": 1,
+          "color": "#FFA500",
+          "label": {
+            "text": getQuantity(response.productsGroup[i].group_sku, response)
+          }
+        }
+      ],
       table: {
         name: response.productsGroup[i].group_sku,
         amount: response.productsGroup[i].total_amount,
@@ -47,8 +57,6 @@ function rawData() {
 
   //Target mapping
   response.transactions.map((data) => {
-
-    
     let color = getColorIntersections(data.target_id, response, multipleIntersections);
 
     for (let i = 0; i < response.productsGroup.length; i++) {
@@ -57,12 +65,13 @@ function rawData() {
           label: {
             text: `Target\n${data.target_id}`, backgroundColor: color
           },
+
           color: color
         }
 
-        rData[`${data.target_id}-${i}`] = {
+        rData[`${data.target_id}-${'main-' + i}`] = {
           id1: data.target_id,
-          id2: i,
+          id2: 'main-' + i,
           end1: { arrow: true },
           end2: { arrow: false },
           color: color,
@@ -104,11 +113,6 @@ function Filtering(props) {
   });
   const chartRef = useRef();
 
-
-
-
-
-
   //Communities ----->
   const styledItems = (selectedItemId) => {
     let values;
@@ -116,21 +120,21 @@ function Filtering(props) {
     if (selectedItemId === undefined) {
       return items;
     }
-   
+
 
     if (items[selectedItemId].color !== 'grey') {
-    values = mapValues(items, (item, id) =>
-    ({
+      values = mapValues(items, (item, id) =>
+      ({
         ...item,
         fade: !hasNodeIntersection(selectedItemId, id, items) && items[selectedItemId].color !== item.color
       }));
-    }else {
+    } else {
       // getNeighbours().then(function(foreground){
-        values = mapValues(items, (item, id) =>
-        ({
-            ...item,
-            fade: false
-          }));
+      values = mapValues(items, (item, id) =>
+      ({
+        ...item,
+        fade: false
+      }));
       // })
     }
     return values
@@ -157,6 +161,7 @@ function Filtering(props) {
   }, []);
 
   const onChangeHandler = ({ positions: newPositions, selection: newSelection }) => {
+    console.log()
     if ((newPositions == null && newSelection == null)) {
       return;
     }
@@ -270,6 +275,8 @@ function Filtering(props) {
       };
     });
   };
+
+
   const onViewChangeHandler = ({ zoom }) => {
     const chart = chartRef.current;
     if (chart == null) {

@@ -1,4 +1,3 @@
-
 const data = {
     id1: {
       color: "#048170",

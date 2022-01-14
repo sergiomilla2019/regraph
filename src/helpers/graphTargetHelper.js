@@ -9,7 +9,7 @@ function getColorIntersections(target, data, multipleIntersections) {
   let intersectionTable = getIntersections(target, data)
   let interesectionValue = intersectionTable.reduce((a, b) => a + b, 0)
   if (multipleIntersections[interesectionValue] == undefined) {
-    multipleIntersections[interesectionValue] = rainbow((interesectionValue * intersectionTable.length), Math.pow(2, intersectionTable.length) - 1)
+    multipleIntersections[interesectionValue] = rainbow((interesectionValue * 2), Math.pow(2, intersectionTable.length) - 1)
   }
   return multipleIntersections[interesectionValue]
 }
@@ -41,15 +41,34 @@ function getIntersections(target, data) {
   return intersectionTable;
 }
 
-function getSizeByQuantity(grain, data) {
+// function getSizeByQuantity(grain, data) {
+//   let quantity = 0
+//   data.transactions.forEach(t => {
+//     if (t.name === grain) {
+//       quantity++;
+//     }
+//   })
+//   return 2 + (quantity / 1000)
+// }
+
+
+function getQuantity(grain, data) {
   let quantity = 0
   data.transactions.forEach(t => {
     if (t.name === grain) {
       quantity++;
     }
   })
-  return 2 + (quantity / 1000)
+  return quantity
 }
+
+function getSizeByQuantity(grain, data) {
+  let base = 2
+  return base + (getQuantity(grain, data)/1000)
+}
+
+
+
 
 function rainbow(step, numOfSteps) {
   // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
@@ -72,7 +91,7 @@ function rainbow(step, numOfSteps) {
 
 //Fade filtering
 function hasNodeIntersection(item1, item2, items){
-  console.log(item1, item2, `${item1}-${item2}`)
+  console.log(item1, item2)
   if(items[`${item1}-${item2}`] || items[`${item1}-${item2}`]){
     return true
   }else{
@@ -80,5 +99,5 @@ function hasNodeIntersection(item1, item2, items){
   }
 }
 
-export { getColorIntersections, getSizeByQuantity, getIntersections, hasNodeIntersection }
+export { getColorIntersections, getSizeByQuantity, getIntersections, hasNodeIntersection, getQuantity }
 
